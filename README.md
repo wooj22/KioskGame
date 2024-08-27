@@ -1,2 +1,2 @@
-# KioskGame
-Down 상호작용으로 진행되는 Game (Kiosk x, Xroom Down 이용)
+# Unjusa_Particle
+통합제어시스템의 제어를 받는 인터랙티브 파티클 프로젝트(호쿠요 매니저와 연동)
