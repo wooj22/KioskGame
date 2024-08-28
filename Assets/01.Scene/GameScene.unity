@@ -493,6 +493,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentRoundLevel: 0
   roundLevelList: 010000000200000003000000
+  roundLifeSpan: 0
+  roundDuration: 180
   currentMoleSpawnInterval: 0
   moleSpawnIntervalList: 0a0000000800000006000000
   currentMaxActiveMoles: 0
@@ -501,10 +503,10 @@ MonoBehaviour:
   currentMoleCarrotEatingTime: 0
   moleCarrotEatingTimeList: 070000000600000005000000
   currentSMoleSpawnInterval: 0
-  sMoleSpawnIntervalList: 140000001900000014000000
-  currentMaxActiveSMoles: 0
-  currentSMoleHitCount: 0
-  currentSMoleCarrotEatingTime: 0
+  sMoleSpawnIntervalList: 1e0000001900000014000000
+  currentMaxActiveSMoles: 1
+  currentSMoleHitCount: 1
+  currentSMoleCarrotEatingTime: 3
   startPosition: {x: -9, y: 0, z: 9}
   endPosition: {x: 9, y: 0, z: -9}
   interval: 2
@@ -520,6 +522,7 @@ MonoBehaviour:
   sMolePrefab: {fileID: 648871051949975540, guid: c9e9d8cad15c2904f8871e2c84ff42fe,
     type: 3}
   sMoleTransform: {fileID: 625303287}
+  sMole: {fileID: 0}
 --- !u!4 &454286617
 Transform:
   m_ObjectHideFlags: 0

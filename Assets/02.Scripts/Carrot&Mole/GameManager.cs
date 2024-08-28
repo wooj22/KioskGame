@@ -1,12 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class GameManager : MonoBehaviour
 {
     [Header("라운드 정보")]
     [SerializeField] public int currentRoundLevel;              // 라운드 레벨
     [SerializeField] public List<int> roundLevelList;
+    [SerializeField] public int roundLifeSpan;                  // 라운드 수명(=라운드 레벨)
+    [SerializeField] public float roundDuration;                // 라운드 진행 시간
 
     [Header("일반두더지 레벨")]
     [SerializeField] public int currentMoleSpawnInterval;       // 일반두더지 생성주기
@@ -21,9 +24,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] public int currentSMoleSpawnInterval;       // 최강두더지 생성주기
     [SerializeField] public List<int> sMoleSpawnIntervalList;
     [SerializeField] public int currentMaxActiveSMoles;          // 최강두더지 동시생성 최대개수(1)
-    [SerializeField] public int currentSMoleHitCount;            // 일반두더지 밟아야하는 횟수(1)
-    [SerializeField] public int currentSMoleCarrotEatingTime;    // 일반두더지 당근 먹는 시간(3)
-
+    [SerializeField] public int currentSMoleHitCount;            // 최강두더지 밟아야하는 횟수(1)
+    [SerializeField] public int currentSMoleCarrotEatingTime;    // 최강두더지 당근 먹는 시간(3)
 
     [Header("판 크기")]
     [SerializeField] public Vector3 startPosition;
@@ -41,18 +43,55 @@ public class GameManager : MonoBehaviour
     [SerializeField] public Transform MoleTransform;
     [SerializeField] public List<GameObject> Moles;
 
-    [Header("특수두더지")]
+    [Header("최강두더지")]
     [SerializeField] public GameObject sMolePrefab;
     [SerializeField] public Transform sMoleTransform;
+    [SerializeField] public GameObject sMole;
 
 
     void Start()
     {
-        currentRoundLevel = roundLevelList[0];
+        // 오브젝트 풀링
         CreateCarrots();
         CreateMoles();
+        CreateSMoles();
+
+        // 1레벨로 시작
+        currentRoundLevel = roundLevelList[0];
+
+        // 레벨 셋팅
+        SettingLevel(currentRoundLevel);
+
+        // 게임 시작
+        StartCoroutine(RoundStart());
     }
 
+    /// 레벨 셋팅
+    void SettingLevel(int level)
+    {
+        // 수명
+        roundLifeSpan = level;
+
+        // 일반두더지
+        currentMoleSpawnInterval = moleSpawnIntervalList[level-1];
+        currentMaxActiveMoles = maxActiveMolesList[level - 1];
+        currentMoleHitCount = level + 2;
+        currentMoleCarrotEatingTime = moleCarrotEatingTimeList[level - 1];
+
+        // 최강두더지
+        currentSMoleSpawnInterval = sMoleSpawnIntervalList[level - 1];
+    }
+
+    /// 게임 진행
+    IEnumerator RoundStart()
+    {
+        // 당근판 활성화
+        ActiveCarrots();
+
+        yield return 0f;
+    }
+
+    /// 당근판 생성
     void CreateCarrots()
     {
         for (float x = startPosition.x; x <= endPosition.x; x += 2)
@@ -60,25 +99,38 @@ public class GameManager : MonoBehaviour
             for (float z = startPosition.z; z >= endPosition.z; z -= 2)
             {
                 Vector3 position = new Vector3(x, yPosition, z);
-                Carrots.Add(Instantiate(CarrotPrefab, position, Quaternion.identity, CarrotTransform));
+                GameObject c = Instantiate(CarrotPrefab, position, Quaternion.identity, CarrotTransform);
+                c.SetActive(false);
+                Carrots.Add(c);
             }
         }
     }
 
+    /// 당근판 초기화
+    void ActiveCarrots()
+    {
+        for (int i = 0; i < Carrots.Count; i++)
+        {
+            Carrots[i].SetActive(true);
+        }
+    }
+
+    /// 일반두더지 생성(10마리로 재활용)
     void CreateMoles()
     {
-        for (float x = startPosition.x; x <= endPosition.x; x += 2)
+        for (int i=0; i<10; i++) 
         {
-            for (float z = 9; z >= -9; z -= 2)
-            {
-                Vector3 position = new Vector3(x, 0, z);
-                Moles.Add(Instantiate(MolePrefab, position, Quaternion.identity, MoleTransform));
-            }
+            GameObject m = Instantiate(MolePrefab, startPosition, Quaternion.identity, MoleTransform);
+            m.SetActive(false);
+            Moles.Add(m);
         }
     }
 
-    void Update()
+    /// 특수두더지 생성
+    void CreateSMoles()
     {
-        
+        GameObject sm = Instantiate(sMolePrefab, startPosition, Quaternion.identity, sMoleTransform);
+        sm.SetActive(false);
+        sMole = sm;
     }
 }

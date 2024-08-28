@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 3570558537987623422}
   m_Layer: 0
   m_Name: sMole
-  m_TagString: Untagged
+  m_TagString: SMole
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
