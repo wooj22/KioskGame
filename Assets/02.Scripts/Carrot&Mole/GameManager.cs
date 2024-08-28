@@ -16,7 +16,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] public List<int> moleSpawnIntervalList;
     [SerializeField] public int currentMaxActiveMoles;          // 일반두더지 동시생성 최대개수
     [SerializeField] public List<int> maxActiveMolesList;
-    [SerializeField] public int currentMoleHitCount;            // 일반두더지 밟아야하는 횟수
+    [SerializeField] public int currentMoleLife;                // 일반두더지 밟아야하는 횟수
     [SerializeField] public int currentMoleCarrotEatingTime;    // 일반두더지 당근먹는시간
     [SerializeField] public List<int> moleCarrotEatingTimeList;
 
@@ -24,7 +24,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] public int currentSMoleSpawnInterval;       // 최강두더지 생성주기
     [SerializeField] public List<int> sMoleSpawnIntervalList;
     [SerializeField] public int currentMaxActiveSMoles;          // 최강두더지 동시생성 최대개수(1)
-    [SerializeField] public int currentSMoleHitCount;            // 최강두더지 밟아야하는 횟수(1)
+    [SerializeField] public int currentSMoleLife;                // 최강두더지 밟아야하는 횟수(1)
     [SerializeField] public int currentSMoleCarrotEatingTime;    // 최강두더지 당근 먹는 시간(3)
 
     [Header("판 크기")]
@@ -48,21 +48,24 @@ public class GameManager : MonoBehaviour
     [SerializeField] public Transform sMoleTransform;
     [SerializeField] public GameObject sMole;
 
-
     void Start()
     {
-        // 오브젝트 풀링
+        InitializeGame();
+        StartGame();
+    }
+
+    /// 오브젝트 풀링
+    void InitializeGame()
+    {
         CreateCarrots();
         CreateMoles();
         CreateSMoles();
+    }
 
-        // 1레벨로 시작
-        currentRoundLevel = roundLevelList[0];
-
-        // 레벨 셋팅
+    /// 게임시작
+    void StartGame()
+    {
         SettingLevel(currentRoundLevel);
-
-        // 게임 시작
         StartCoroutine(RoundStart());
     }
 
@@ -75,23 +78,97 @@ public class GameManager : MonoBehaviour
         // 일반두더지
         currentMoleSpawnInterval = moleSpawnIntervalList[level-1];
         currentMaxActiveMoles = maxActiveMolesList[level - 1];
-        currentMoleHitCount = level + 2;
+        currentMoleLife = level + 2;
         currentMoleCarrotEatingTime = moleCarrotEatingTimeList[level - 1];
+
+        for (int i = 0; i < Moles.Count; i++)
+        {
+            Mole m = Moles[i].GetComponent<Mole>();
+            m.moleCarrotEatingTime = currentMoleCarrotEatingTime;
+            m.moleLife = currentMoleLife;
+        }
 
         // 최강두더지
         currentSMoleSpawnInterval = sMoleSpawnIntervalList[level - 1];
     }
 
-    /// 게임 진행
+    /// 라운드 진행
     IEnumerator RoundStart()
     {
-        // 당근판 활성화
-        ActiveCarrots();
+        Debug.Log(currentRoundLevel + "라운드 시작");
 
-        yield return 0f;
+        // 당근판 활성화
+        ActivateCarrots();
+
+        // 두더지 활성화
+        Coroutine mole = StartCoroutine(MolesCoroutine());
+        Coroutine smole = StartCoroutine(SMolesCoroutine());
+
+        // 라운드 종료
+        yield return new WaitForSeconds(roundDuration);
+        StopCoroutine(mole);
+        StopCoroutine(smole);
+
+        Debug.Log(currentRoundLevel + "라운드 종료");
     }
 
-    /// 당근판 생성
+    IEnumerator MolesCoroutine()
+    {
+        while (true)
+        {
+            SpawnMoles();
+            yield return new WaitForSeconds(currentMoleSpawnInterval);
+        }
+    }
+
+    IEnumerator SMolesCoroutine()
+    {
+        while (true)
+        {
+            SpawnSMole();
+            yield return new WaitForSeconds(currentSMoleSpawnInterval);
+        }
+    }
+
+    /// 일반두더지 활성화
+    public void SpawnMoles()
+    {
+        for (int i = 0; i < currentMaxActiveMoles; i++)
+        {
+            GameObject mole = Moles[i];
+            GameObject randomCarrot = Carrots[Random.Range(0, Carrots.Count)];
+            while (!randomCarrot.activeSelf)
+            {
+                randomCarrot = Carrots[Random.Range(0, Carrots.Count)];
+            }
+
+            Vector3 position = randomCarrot.transform.position;
+            position.y = 0;
+
+            mole.transform.position = position;
+            mole.SetActive(true);
+        }
+    }
+
+    /// 최강두더지 활성화
+    public void SpawnSMole()
+    {
+        GameObject randomCarrot = Carrots[Random.Range(0, Carrots.Count)];
+        while (!randomCarrot.activeSelf)
+        {
+            randomCarrot = Carrots[Random.Range(0, Carrots.Count)];
+        }
+
+        Vector3 position = randomCarrot.transform.position;
+        position.y = 0;
+
+        sMole.transform.position = position;
+        sMole.SetActive(true);
+    }
+
+
+    /*---------- 풀링 디자인 ----------*/
+    /// 당근판 풀링
     void CreateCarrots()
     {
         for (float x = startPosition.x; x <= endPosition.x; x += 2)
@@ -107,7 +184,7 @@ public class GameManager : MonoBehaviour
     }
 
     /// 당근판 초기화
-    void ActiveCarrots()
+    void ActivateCarrots()
     {
         for (int i = 0; i < Carrots.Count; i++)
         {
@@ -115,7 +192,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    /// 일반두더지 생성(10마리로 재활용)
+    /// 일반두더지 풀링(10마리로 재활용)
     void CreateMoles()
     {
         for (int i=0; i<10; i++) 
@@ -126,7 +203,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    /// 특수두더지 생성
+    /// 특수두더지 풀링
     void CreateSMoles()
     {
         GameObject sm = Instantiate(sMolePrefab, startPosition, Quaternion.identity, sMoleTransform);

@@ -491,21 +491,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4b1d96feb8564c48a32e08f59974238, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentRoundLevel: 0
+  currentRoundLevel: 3
   roundLevelList: 010000000200000003000000
   roundLifeSpan: 0
-  roundDuration: 180
+  roundDuration: 60
   currentMoleSpawnInterval: 0
   moleSpawnIntervalList: 0a0000000800000006000000
   currentMaxActiveMoles: 0
   maxActiveMolesList: 020000000400000006000000
-  currentMoleHitCount: 0
+  currentMoleLife: 0
   currentMoleCarrotEatingTime: 0
   moleCarrotEatingTimeList: 070000000600000005000000
   currentSMoleSpawnInterval: 0
   sMoleSpawnIntervalList: 1e0000001900000014000000
   currentMaxActiveSMoles: 1
-  currentSMoleHitCount: 1
+  currentSMoleLife: 0
   currentSMoleCarrotEatingTime: 3
   startPosition: {x: -9, y: 0, z: 9}
   endPosition: {x: 9, y: 0, z: -9}
